@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-namespace TourneeFutee
+﻿namespace TourneeFutee
 
 {
     public class Matrix
@@ -18,14 +16,15 @@ namespace TourneeFutee
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
             // TODO : implémenter
-            if(nbRows < 0 || nbColumns<0)
+            if (nbRows < 0 || nbColumns < 0)
             {
                 throw new ArgumentOutOfRangeException();
             }
+
             this.nbRows = nbRows;
             this.nbColumns = nbColumns;
             this.defaultValue = defaultValue;
-           
+
 
             matrix = new List<List<float>>();
 
@@ -45,7 +44,7 @@ namespace TourneeFutee
         public float DefaultValue
         {
             get { return this.defaultValue; } // TODO : implémenter
-                 // pas de set
+                                              // pas de set
         }
 
         // Propriété : nombre de lignes
@@ -53,7 +52,7 @@ namespace TourneeFutee
         public int NbRows
         {
             get { return this.nbRows; } // TODO : implémenter
-                 // pas de set
+                                        // pas de set
         }
 
         // Propriété : nombre de colonnes
@@ -61,7 +60,7 @@ namespace TourneeFutee
         public int NbColumns
         {
             get { return this.nbColumns; } // TODO : implémenter
-                 // pas de set
+                                           // pas de set
         }
 
         /* Insère une ligne à l'indice `i`. Décale les lignes suivantes vers le bas.
@@ -102,14 +101,14 @@ namespace TourneeFutee
 
         // Supprime la ligne à l'indice `i`. Décale les lignes suivantes vers le haut.
         // Lève une ArgumentOutOfRangeException si `i` est en dehors des indices valides
-        public void RemoveRow(int i) 
+        public void RemoveRow(int i)
         {
             // TODO : implémenter
             if (i < 0 || i >= nbRows)
                 throw new ArgumentOutOfRangeException();
 
-            
-                matrix.RemoveAt(i);
+
+            matrix.RemoveAt(i);
 
             nbRows--;
 
@@ -149,16 +148,16 @@ namespace TourneeFutee
             if (i < 0 || i >= nbRows || j < 0 || j >= nbColumns)
                 throw new ArgumentOutOfRangeException();
 
-             matrix[i][j]=v;
+            matrix[i][j] = v;
         }
 
         // Affiche la matrice
         public void Print()
         {
             // TODO : implémenter
-            for(int i=0; i<nbRows; i++)
+            for (int i = 0; i < nbRows; i++)
             {
-                for (int j=0;j<nbColumns; j++)
+                for (int j = 0; j < nbColumns; j++)
                 {
                     Console.Write(GetValue(i, j));
                 }

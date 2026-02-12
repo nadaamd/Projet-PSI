@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Xml.Linq;
+
 namespace TourneeFutee
 {
     public class Graph
@@ -7,7 +7,12 @@ namespace TourneeFutee
 
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
-
+        Matrix adjacencyMatrix;
+        Dictionary<string, int> vertexIndices;
+        Dictionary<string, float> vertexValues;
+        bool directed;
+        float noEdgeValue;
+     
         // --- Construction du graphe ---
 
         // Contruit un graphe (`directed`=true => orienté)
@@ -15,6 +20,12 @@ namespace TourneeFutee
         public Graph(bool directed, float noEdgeValue = 0)
         {
             // TODO : implémenter
+            this.directed = directed;
+            this.noEdgeValue = noEdgeValue;
+            adjacencyMatrix = new Matrix(0,0,noEdgeValue);
+            vertexIndices = new Dictionary<string, int>();
+            vertexValues = new Dictionary<string, float>();
+
         }
 
 
@@ -24,16 +35,16 @@ namespace TourneeFutee
         // Lecture seule
         public int Order
         {
-            get;    // TODO : implémenter
-                    // pas de set
+            get { return this.vertexIndices.Count; }   // TODO : implémenter
+                                         // pas de set
         }
 
         // Propriété : graphe orienté ou non
         // Lecture seule
         public bool Directed
         {
-            get;    // TODO : implémenter
-                    // pas de set
+            get { return this.directed; }    // TODO : implémenter
+                                             // pas de set
         }
 
 
@@ -44,6 +55,17 @@ namespace TourneeFutee
         public void AddVertex(string name, float value = 0)
         {
             // TODO : implémenter
+            if (vertexIndices.ContainsKey(name))
+            {
+                throw new ArgumentException("Un sommet avec ce nom existe deja.");
+            }
+            int newIndex=vertexIndices.Count;
+
+            vertexIndices.Add(name, newIndex);
+            vertexValues.Add(name, value);
+
+            adjacencyMatrix.AddRow(newIndex);
+            adjacencyMatrix.AddColumn(newIndex);
         }
 
 
@@ -51,15 +73,31 @@ namespace TourneeFutee
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public void RemoveVertex(string name)
         {
-            // TODO : implémenter
+            if (!vertexIndices.ContainsKey(name))
+            {
+                throw new ArgumentException("Un sommet avec ce nom n'existe pas.");
+            }
+            int newIndex = vertexIndices.Count;
+
+            vertexIndices.Remove(name);
+            vertexValues.Remove(name);
+
+            adjacencyMatrix.RemoveRow(newIndex);
+            adjacencyMatrix.RemoveColumn(newIndex);
         }
+        
 
         // Renvoie la valeur du sommet de nom `name`
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public float GetVertexValue(string name)
         {
             // TODO : implémenter
-            return 0.0f;
+            if (vertexIndices.ContainsKey(name))
+            {
+                throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
+            }
+
+            return vertexValues[name];
         }
 
         // Affecte la valeur du sommet de nom `name` à `value`
@@ -67,6 +105,12 @@ namespace TourneeFutee
         public void SetVertexValue(string name, float value)
         {
             // TODO : implémenter
+            if (vertexIndices.ContainsKey(name))
+            {
+                throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
+            }
+
+            vertexValues[name] = value ;
         }
 
 
@@ -75,9 +119,25 @@ namespace TourneeFutee
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public List<string> GetNeighbors(string vertexName)
         {
+
+            if (vertexIndices.ContainsKey(vertexName))
+            {
+                throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
+            }
             List<string> neighborNames = new List<string>();
 
-            // TODO : implémenter
+            int vertexIndex = vertexIndices[vertexName];
+         
+            foreach(var k in vertexIndices)
+            {
+                string othername = k.Key;
+                int otherindex = k.Value;
+
+                if (adjacencyMatrix.GetValue(vertexIndex, otherindex)!=0)
+                {
+                    neighborNames.Add(othername);
+                }
+            }
 
             return neighborNames;
         }

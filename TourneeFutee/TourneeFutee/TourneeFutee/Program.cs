@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-namespace TourneeFutee
+﻿namespace TourneeFutee
 {
     internal class Program
     {
