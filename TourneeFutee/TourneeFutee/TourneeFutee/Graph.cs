@@ -77,13 +77,23 @@ namespace TourneeFutee
             {
                 throw new ArgumentException("Un sommet avec ce nom n'existe pas.");
             }
-            int newIndex = vertexIndices.Count;
+            int newIndex = vertexIndices[name];
 
-            vertexIndices.Remove(name);
-            vertexValues.Remove(name);
+           
 
-            adjacencyMatrix.RemoveRow(newIndex);
             adjacencyMatrix.RemoveColumn(newIndex);
+            adjacencyMatrix.RemoveRow(newIndex);
+
+            vertexValues.Remove(name);
+            vertexIndices.Remove(name);
+
+            var keys = vertexIndices.Keys.ToList();
+            foreach (var k in keys)
+            {
+                if (vertexIndices[k] > newIndex)
+                    vertexIndices[k]--;
+            }
+
         }
         
 
@@ -92,7 +102,7 @@ namespace TourneeFutee
         public float GetVertexValue(string name)
         {
             // TODO : implémenter
-            if (vertexIndices.ContainsKey(name))
+            if (!vertexIndices.ContainsKey(name))
             {
                 throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
             }
@@ -105,7 +115,7 @@ namespace TourneeFutee
         public void SetVertexValue(string name, float value)
         {
             // TODO : implémenter
-            if (vertexIndices.ContainsKey(name))
+            if (!vertexIndices.ContainsKey(name))
             {
                 throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
             }
@@ -120,7 +130,7 @@ namespace TourneeFutee
         public List<string> GetNeighbors(string vertexName)
         {
 
-            if (vertexIndices.ContainsKey(vertexName))
+            if (!vertexIndices.ContainsKey(vertexName))
             {
                 throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
             }
@@ -133,7 +143,7 @@ namespace TourneeFutee
                 string othername = k.Key;
                 int otherindex = k.Value;
 
-                if (adjacencyMatrix.GetValue(vertexIndex, otherindex)!=0)
+                if (adjacencyMatrix.GetValue(vertexIndex, otherindex)!= noEdgeValue)
                 {
                     neighborNames.Add(othername);
                 }
@@ -152,7 +162,22 @@ namespace TourneeFutee
          */
         public void AddEdge(string sourceName, string destinationName, float weight = 1)
         {
-            // TODO : implémenter
+            if(!vertexIndices.ContainsKey(sourceName)|| !vertexIndices.ContainsKey(destinationName)){
+                throw new ArgumentException("Un ou les deux sommets n'exsitent pas dans le graphe");
+            }
+            int srcIndex = vertexIndices[sourceName];
+            int dstIndex = vertexIndices[destinationName];
+
+            if (adjacencyMatrix.GetValue(srcIndex, dstIndex)!= noEdgeValue)
+            {
+                throw new ArgumentException("L'arc existe déjà");
+            }
+            adjacencyMatrix.SetValue(srcIndex, dstIndex, weight);
+
+            if (!directed)
+            {
+                adjacencyMatrix.SetValue(dstIndex,srcIndex, weight);
+            }
         }
 
         /* Supprime l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName` du graphe
@@ -164,7 +189,24 @@ namespace TourneeFutee
         public void RemoveEdge(string sourceName, string destinationName)
         {
             // TODO : implémenter
+
+
+            if (!vertexIndices.ContainsKey(sourceName) || !vertexIndices.ContainsKey(destinationName))
+                throw new ArgumentException();
+
+            int a = vertexIndices[sourceName];
+            int b = vertexIndices[destinationName];
+
+            if (adjacencyMatrix.GetValue(a, b) == noEdgeValue)
+                throw new ArgumentException();
+
+            adjacencyMatrix.SetValue(a, b, noEdgeValue);
+
+            if (!directed)
+                adjacencyMatrix.SetValue(b, a, noEdgeValue);
         }
+
+        
 
         /* Renvoie le poids de l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName`
          * Si le graphe n'est pas orienté, GetEdgeWeight(A, B) = GetEdgeWeight(B, A) 
@@ -175,7 +217,19 @@ namespace TourneeFutee
         public float GetEdgeWeight(string sourceName, string destinationName)
         {
             // TODO : implémenter
-            return 0.0f;
+            if (!vertexIndices.ContainsKey(sourceName) || !vertexIndices.ContainsKey(destinationName))
+                throw new ArgumentException();
+
+            int a = vertexIndices[sourceName];
+            int b = vertexIndices[destinationName];
+
+            float w = adjacencyMatrix.GetValue(a, b);
+
+            if (w == noEdgeValue)
+                throw new ArgumentException();
+
+            return w;
+
         }
 
         /* Affecte le poids l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName` à `weight` 
@@ -185,6 +239,22 @@ namespace TourneeFutee
         public void SetEdgeWeight(string sourceName, string destinationName, float weight)
         {
             // TODO : implémenter
+
+            if (!vertexIndices.ContainsKey(sourceName) || !vertexIndices.ContainsKey(destinationName))
+                throw new ArgumentException();
+
+            int a = vertexIndices[sourceName];
+            int b = vertexIndices[destinationName];
+
+            if (adjacencyMatrix.GetValue(a, b) == noEdgeValue)
+                throw new ArgumentException();
+
+            adjacencyMatrix.SetValue(a, b, weight);
+
+            if (!directed)
+                adjacencyMatrix.SetValue(b, a, weight);
+
+
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
