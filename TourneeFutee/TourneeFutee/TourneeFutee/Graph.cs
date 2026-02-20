@@ -1,11 +1,18 @@
-﻿namespace TourneeFutee
+﻿using System.Xml.Linq;
+
+namespace TourneeFutee
 {
     public class Graph
     {
 
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
-
+        Matrix adjacencyMatrix;
+        Dictionary<string, int> vertexIndices;
+        Dictionary<string, float> vertexValues;
+        bool directed;
+        float noEdgeValue;
+     
         // --- Construction du graphe ---
 
         // Contruit un graphe (`directed`=true => orienté)
@@ -13,6 +20,12 @@
         public Graph(bool directed, float noEdgeValue = 0)
         {
             // TODO : implémenter
+            this.directed = directed;
+            this.noEdgeValue = noEdgeValue;
+            adjacencyMatrix = new Matrix(0,0,noEdgeValue);
+            vertexIndices = new Dictionary<string, int>();
+            vertexValues = new Dictionary<string, float>();
+
         }
 
 
@@ -22,16 +35,16 @@
         // Lecture seule
         public int Order
         {
-            get;    // TODO : implémenter
-                    // pas de set
+            get { return this.vertexIndices.Count; }   // TODO : implémenter
+                                         // pas de set
         }
 
         // Propriété : graphe orienté ou non
         // Lecture seule
         public bool Directed
         {
-            get;    // TODO : implémenter
-                    // pas de set
+            get { return this.directed; }    // TODO : implémenter
+                                             // pas de set
         }
 
 
@@ -42,6 +55,17 @@
         public void AddVertex(string name, float value = 0)
         {
             // TODO : implémenter
+            if (vertexIndices.ContainsKey(name))
+            {
+                throw new ArgumentException("Un sommet avec ce nom existe deja.");
+            }
+            int newIndex=vertexIndices.Count;
+
+            vertexIndices.Add(name, newIndex);
+            vertexValues.Add(name, value);
+
+            adjacencyMatrix.AddRow(newIndex);
+            adjacencyMatrix.AddColumn(newIndex);
         }
 
 
@@ -49,15 +73,41 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public void RemoveVertex(string name)
         {
-            // TODO : implémenter
+            if (!vertexIndices.ContainsKey(name))
+            {
+                throw new ArgumentException("Un sommet avec ce nom n'existe pas.");
+            }
+            int newIndex = vertexIndices[name];
+
+           
+
+            adjacencyMatrix.RemoveColumn(newIndex);
+            adjacencyMatrix.RemoveRow(newIndex);
+
+            vertexValues.Remove(name);
+            vertexIndices.Remove(name);
+
+            var keys = vertexIndices.Keys.ToList();
+            foreach (var k in keys)
+            {
+                if (vertexIndices[k] > newIndex)
+                    vertexIndices[k]--;
+            }
+
         }
+        
 
         // Renvoie la valeur du sommet de nom `name`
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public float GetVertexValue(string name)
         {
             // TODO : implémenter
-            return 0.0f;
+            if (!vertexIndices.ContainsKey(name))
+            {
+                throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
+            }
+
+            return vertexValues[name];
         }
 
         // Affecte la valeur du sommet de nom `name` à `value`
@@ -65,6 +115,12 @@
         public void SetVertexValue(string name, float value)
         {
             // TODO : implémenter
+            if (!vertexIndices.ContainsKey(name))
+            {
+                throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
+            }
+
+            vertexValues[name] = value ;
         }
 
 
@@ -73,9 +129,25 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public List<string> GetNeighbors(string vertexName)
         {
+
+            if (!vertexIndices.ContainsKey(vertexName))
+            {
+                throw new ArgumentException("Le sommet n'a pas été trouvé dans le graphe.");
+            }
             List<string> neighborNames = new List<string>();
 
-            // TODO : implémenter
+            int vertexIndex = vertexIndices[vertexName];
+         
+            foreach(var k in vertexIndices)
+            {
+                string othername = k.Key;
+                int otherindex = k.Value;
+
+                if (adjacencyMatrix.GetValue(vertexIndex, otherindex)!= noEdgeValue)
+                {
+                    neighborNames.Add(othername);
+                }
+            }
 
             return neighborNames;
         }
@@ -90,7 +162,22 @@
          */
         public void AddEdge(string sourceName, string destinationName, float weight = 1)
         {
-            // TODO : implémenter
+            if(!vertexIndices.ContainsKey(sourceName)|| !vertexIndices.ContainsKey(destinationName)){
+                throw new ArgumentException("Un ou les deux sommets n'exsitent pas dans le graphe");
+            }
+            int srcIndex = vertexIndices[sourceName];
+            int dstIndex = vertexIndices[destinationName];
+
+            if (adjacencyMatrix.GetValue(srcIndex, dstIndex)!= noEdgeValue)
+            {
+                throw new ArgumentException("L'arc existe déjà");
+            }
+            adjacencyMatrix.SetValue(srcIndex, dstIndex, weight);
+
+            if (!directed)
+            {
+                adjacencyMatrix.SetValue(dstIndex,srcIndex, weight);
+            }
         }
 
         /* Supprime l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName` du graphe
@@ -102,7 +189,24 @@
         public void RemoveEdge(string sourceName, string destinationName)
         {
             // TODO : implémenter
+
+
+            if (!vertexIndices.ContainsKey(sourceName) || !vertexIndices.ContainsKey(destinationName))
+                throw new ArgumentException();
+
+            int a = vertexIndices[sourceName];
+            int b = vertexIndices[destinationName];
+
+            if (adjacencyMatrix.GetValue(a, b) == noEdgeValue)
+                throw new ArgumentException();
+
+            adjacencyMatrix.SetValue(a, b, noEdgeValue);
+
+            if (!directed)
+                adjacencyMatrix.SetValue(b, a, noEdgeValue);
         }
+
+        
 
         /* Renvoie le poids de l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName`
          * Si le graphe n'est pas orienté, GetEdgeWeight(A, B) = GetEdgeWeight(B, A) 
@@ -113,7 +217,19 @@
         public float GetEdgeWeight(string sourceName, string destinationName)
         {
             // TODO : implémenter
-            return 0.0f;
+            if (!vertexIndices.ContainsKey(sourceName) || !vertexIndices.ContainsKey(destinationName))
+                throw new ArgumentException();
+
+            int a = vertexIndices[sourceName];
+            int b = vertexIndices[destinationName];
+
+            float w = adjacencyMatrix.GetValue(a, b);
+
+            if (w == noEdgeValue)
+                throw new ArgumentException();
+
+            return w;
+
         }
 
         /* Affecte le poids l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName` à `weight` 
@@ -123,6 +239,22 @@
         public void SetEdgeWeight(string sourceName, string destinationName, float weight)
         {
             // TODO : implémenter
+
+            if (!vertexIndices.ContainsKey(sourceName) || !vertexIndices.ContainsKey(destinationName))
+                throw new ArgumentException();
+
+            int a = vertexIndices[sourceName];
+            int b = vertexIndices[destinationName];
+
+            if (adjacencyMatrix.GetValue(a, b) == noEdgeValue)
+                throw new ArgumentException();
+
+            adjacencyMatrix.SetValue(a, b, weight);
+
+            if (!directed)
+                adjacencyMatrix.SetValue(b, a, weight);
+
+
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
