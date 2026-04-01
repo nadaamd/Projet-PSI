@@ -151,6 +151,11 @@ namespace TourneeFutee
 
             return neighborNames;
         }
+        // Dans la classe Little, on a besoin de la liste des sommets. On rajoute donc cette fonction
+        public List<string> GetVertices()
+        {
+            return new List<string>(vertexIndices.Keys);
+        }
 
         // --- Gestion des arcs ---
 
