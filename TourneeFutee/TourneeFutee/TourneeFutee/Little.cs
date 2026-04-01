@@ -5,6 +5,9 @@
     public class Little
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
+        Graph graph;
+        Matrix costMatrix;
+        List<string> cities;
 
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Little(Graph graph)
