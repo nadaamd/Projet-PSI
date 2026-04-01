@@ -22,20 +22,20 @@
         // Coût total de la tournée
         public float Cost
         {
-            get { return cost; }    // TODO : implémenter
+            get { return cost; }    
         }
 
         // Nombre de trajets dans la tournée
         public int NbSegments
         {
-            get { return segments.Count; }    // TODO : implémenter
+            get { return segments.Count; }    
         }
 
 
         // Renvoie vrai si la tournée contient le trajet `source`->`destination`
         public bool ContainsSegment((string source, string destination) segment)
         {
-            return false;   // TODO : implémenter 
+            return segments.Contains(segment);    
         }
 
 
