@@ -8,18 +8,27 @@
         List<(string source, string destination)> segments;
         float cost;
 
+        // Constructeur 
+        public Tour(Graph graph)
+        {
+            this.graph = graph;
+            this.segments = new List<(string source, string destination)>();
+            this.cost = 0;
+        }
+
         // propriétés
+
 
         // Coût total de la tournée
         public float Cost
         {
-            get;    // TODO : implémenter
+            get { return cost; }    // TODO : implémenter
         }
 
         // Nombre de trajets dans la tournée
         public int NbSegments
         {
-            get;    // TODO : implémenter
+            get { return segments.Count; }    // TODO : implémenter
         }
 
 
