@@ -4,6 +4,9 @@
     public class Tour
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
+        Graph graph;  
+        List<(string source, string destination)> segments;
+        float cost;
 
         // propriétés
 
