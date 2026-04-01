@@ -10,6 +10,7 @@
         public Little(Graph graph)
         {
             // TODO : implémenter
+
         }
 
         // Trouve la tournée optimale dans le graphe `this.graph`
