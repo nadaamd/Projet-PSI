@@ -5,12 +5,36 @@
     public class Little
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
+        Graph graph;
+        Matrix costMatrix;
+        List<string> cities;
 
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Little(Graph graph)
         {
-            // TODO : implémenter
+            this.graph = graph;
+            this.cities = graph.GetVertices();
 
+            int n = cities.Count;
+            costMatrix = new Matrix(n, n, float.PositiveInfinity);
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (i != j)
+                    {
+                        try
+                        {
+                            float weight = graph.GetEdgeWeight(cities[i], cities[j]);
+                            costMatrix.SetValue(i, j, weight);
+                        }
+                        catch (ArgumentException)
+                        {
+                            // Si il n'y a pas d'arête entre cities[i] et cities[j], on laisse le coût à l'infini
+                        }
+                    }
+                }
+            }
         }
 
         // Trouve la tournée optimale dans le graphe `this.graph`
