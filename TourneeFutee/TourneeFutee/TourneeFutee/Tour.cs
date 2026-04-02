@@ -53,5 +53,12 @@
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
 
+        // Ajoute un segment à la tournée et met à jour le coût total
+        public void AddSegment(string source, string destination)
+        {
+            segments.Add((source, destination));
+            cost += graph.GetEdgeWeight(source, destination);
+        }
+
     }
 }
