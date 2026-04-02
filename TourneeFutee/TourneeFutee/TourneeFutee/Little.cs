@@ -42,7 +42,22 @@
         public Tour ComputeOptimalTour()
         {
             // TODO : implémenter
-            return new Tour();
+           Tour bestTour=new Tour(graph);
+            float minCost=float.PositiveInfinity;
+            List<(string, string)> bestSegments= new List<(string, string)>();
+
+            List<int> path=new List<int> { 0};
+            bool[] visited=new bool[cities.Count];
+            visited[0]=true;
+
+            ComputeOptimalTourRecursive(path, visited,0, ref minCost, ref bestSegments);
+
+            foreach(var seg in bestSegments) 
+            {
+                float weight = graph.GetEdgeWeight(seg.Item1, seg.Item2);
+                bestTour.AddSegment((seg.Item1, seg.Item2), weight);
+            }
+            return bestTour;
         }
 
         // --- Méthodes utilitaires réalisant des étapes de l'algorithme de Little
@@ -76,6 +91,52 @@
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
+        private void ComputeOptimalTourRecursive(List<int> path, bool[] visited, float currentCost, ref float minCost, ref List<(string, string)> bestSegments)
+        {
+            if (path.Count == cities.Count)
+            {
+                float returnCost = costMatrix.GetValue(path[path.Count - 1], 0);
 
+                if (returnCost == float.PositiveInfinity)
+                { return; }
+
+                float totalCost = currentCost + returnCost;
+
+                if (totalCost < minCost)
+                {
+                    minCost = totalCost;
+                    bestSegments = new List<(string, string)>();
+
+                    for (int i = 0; i < path.Count - 1; i++)
+                    {
+                        bestSegments.Add((cities[path[i]], cities[path[i + 1]]));
+                    }
+                    bestSegments.Add((cities[path[path.Count - 1]], cities[0]));
+                }
+                return;
+            }
+
+            if (currentCost >= minCost)
+            { return; }
+
+            for (int i = 0; i < cities.Count; i++)
+            {
+                if (!visited[i])
+                {
+                    float cost = costMatrix.GetValue(path[path.Count - 1], i);
+                    if (cost == float.PositiveInfinity)
+                    { continue; }
+
+                    visited[i] = true;
+                    path.Add(i);
+
+                    ComputeOptimalTourRecursive(path, visited, currentCost + cost, ref minCost, ref bestSegments);
+
+                    path.RemoveAt(path.Count - 1);
+                    visited[i] = false;
+                }
+            }
+
+        }
     }
 }

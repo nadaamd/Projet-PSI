@@ -38,6 +38,11 @@
             return segments.Contains(segment);    
         }
 
+        public void AddSegment((string source, string destination) segment, float weight)
+        {
+            segments.Add(segment);
+            cost += weight;
+        }
 
         // Affiche les informations sur la tournée : coût total et trajets
         public void Print()
