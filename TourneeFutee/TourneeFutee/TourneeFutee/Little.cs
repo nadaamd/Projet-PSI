@@ -173,8 +173,56 @@
         // où `i`, `j`, et `value` contiennent respectivement la ligne, la colonne et la valeur du regret maximale
         public static (int i, int j, float value) GetMaxRegret(Matrix m)
         {
-            // TODO : implémenter
-            return (0, 0, 0.0f);
+            float maxRegret = -1;
+            int maxI = -1;
+            int maxJ = -1;
+
+            for(int i = 0;i < m.NbRows;i++)
+            {
+                for (int j = 0;j < m.NbColumns; j++)
+                {
+                    if(m.GetValue(i,j) == float.PositiveInfinity)
+                    {
+                        continue;
+                    }
+                    // Trouver min de la ligne i hors j
+                    float minRow = float.MaxValue;
+                    for (int k = 0; k < m.NbColumns; k++)
+                    {
+                        if (k != j && m.GetValue(i,k) != float.PositiveInfinity)
+                        {
+                            float value = m.GetValue(i, k);
+                            if (value < minRow)
+                            {
+                                minRow = value;
+                            }
+                        }
+                    }
+
+                    // Trouver min de la colonne j hors i
+                    float minCol = float.MaxValue;
+                    for (int k = 0; k < m.NbRows; k++)
+                    {
+                        if (k != i && m.GetValue(k, j) != float.PositiveInfinity)
+                        {
+                            float value = m.GetValue(k, j);
+                            if (value < minCol)
+                            {
+                                minCol = value;
+                            }
+                        }
+                    }
+
+                    float regret = minRow + minCol;
+                    if (regret > maxRegret)
+                    {
+                        maxRegret = regret;
+                        maxI = i;
+                        maxJ = j;
+                    }
+                }
+            }
+            return (maxI, maxJ, maxRegret);
 
         }
 
