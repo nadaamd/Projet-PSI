@@ -111,8 +111,62 @@
         // Après appel à cette méthode, la matrice `m` est *modifiée*.
         public static float ReduceMatrix(Matrix m)
         {
-            // TODO : implémenter
-            return 0.0f;
+            float totalReduction = 0;
+
+            // Réduction des lignes
+            for (int i=0; i<m.NbRows; i++)
+            {
+                float min = float.MaxValue;
+                for (int j = 0; j < m.NbColumns; j++)
+                {
+                    float value = m.GetValue(i, j);
+                    if (value != float.PositiveInfinity && value < min)
+                    {
+                        min = value;
+                    }
+                }
+                if (min != float.MaxValue && min != 0)
+                {
+                    for (int j = 0; j < m.NbColumns; j++)
+                    {
+                        float value = m.GetValue(i, j);
+                        if (value != float.PositiveInfinity)
+                        {
+                            m.SetValue(i, j, value - min);
+                        }
+                        totalReduction += min;
+                    }
+                
+                }
+            }
+
+            // Réduction des colonnes
+            for (int j = 0; j < m.NbColumns; j++)
+            {
+                float min = float.MaxValue;
+                for (int i = 0; i < m.NbRows; i++)
+                {
+                    float value = m.GetValue(i, j);
+                    if (value != float.PositiveInfinity && value < min)
+                    {
+                        min = value;
+                    }
+                }
+                if (min != float.MaxValue && min != 0)
+                {
+                    for (int i = 0; i < m.NbRows; i++)
+                    {
+                        float value = m.GetValue(i, j);
+                        if (value != float.PositiveInfinity)
+                        {
+                            m.SetValue(i, j, value - min);
+                        }
+                    }
+                    totalReduction += min;
+                }
+            }
+            return totalReduction;
+
         }
 
         // Renvoie le regret de valeur maximale dans la matrice de coûts `m` sous la forme d'un tuple `(int i, int j, float value)`
