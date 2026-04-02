@@ -134,9 +134,10 @@
                         {
                             m.SetValue(i, j, value - min);
                         }
-                        totalReduction += min;
+                      
                     }
-                
+                    totalReduction += min;
+
                 }
             }
 
@@ -233,7 +234,63 @@
         {
 
             // TODO : implémenter
-            return false;   
+            string source= segment.source;
+            string destination= segment.destination;
+
+            //on verifie si on fait un aller retour
+            foreach(var s in includedSegments)
+            {
+                if(s.source==destination&&s.destination==source)
+                {
+                    return true; //interdit
+                }
+            }
+
+            //on ajoute le segment dans la liste pour tester
+            List<(string source, string destination)> segments = new List<(string source, string destination)>(includedSegments);
+            segments.Add(segment);
+
+            //on suit le chemin pour voir si on fait un vercle
+            string current = destination;
+            int count = 1;
+
+            while(true)
+            {
+                bool found = false;
+
+                //on cherche si on peut continuer le chemin
+                foreach (var s in segments)
+                {
+                    if(s.source==current)
+                    {
+                        current=s.destination;
+                        count++;
+                        found = true;
+                        break;
+                    }
+                }
+
+                //si on peut plus avancer
+                if(!found)
+                {
+                    return false; 
+                }
+
+                //si on revient au point de départ
+                if(current==source)
+                {
+                    if(count<nbCities)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+
+            }
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
