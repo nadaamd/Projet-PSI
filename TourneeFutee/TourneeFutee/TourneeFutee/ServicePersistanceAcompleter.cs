@@ -1,5 +1,6 @@
 using System;
 using MySql.Data.MySqlClient;
+using System.Collections.Generic;
 
 namespace TourneeFutee
 {
@@ -36,13 +37,17 @@ namespace TourneeFutee
         /// <exception cref="Exception">Levée si la connexion échoue.</exception>
         public ServicePersistance(string serverIp, string dbname, string user, string pwd)
         {
-          // TODO : initialiser et ouvrir la connexion à la base de données
-        // Exemple :
+            // TODO : initialiser et ouvrir la connexion à la base de données
+            // Exemple :
             _connectionString = $"server={serverIp};database={dbname};uid={user};pwd={pwd};";
+
+            using (var conn = new MySqlConnection(_connectionString))
+            {
+                conn.Open();
+            }
 
             // TODO : tester la connexion dès la construction
             //        (ouvrir puis fermer une connexion pour valider les paramètres)
-            throw new NotImplementedException("Constructeur non implémenté.");
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -69,8 +74,81 @@ namespace TourneeFutee
             // Exemple pour récupérer l'id généré :
             //   uint id = Convert.ToUInt32(cmd.ExecuteScalar());
 
-            throw new NotImplementedException("SaveGraph non implémenté.");
+
+            using (var conn = OpenConnection())
+            {
+                uint graphId;
+
+                var cmd = new MySqlCommand(
+           "INSERT INTO Graphe(est_oriente, nb_sommets, no_edge_value) VALUES (@o,@n,@v); SELECT LAST_INSERT_ID();",
+           conn);
+
+
+                cmd.Parameters.AddWithValue("@o", g.Directed ? 1 : 0);
+                cmd.Parameters.AddWithValue("@n", g.Order);
+                cmd.Parameters.AddWithValue("@v", g.NoEdgeValue);
+
+                graphId = Convert.ToUInt32(cmd.ExecuteScalar());
+
+
+                var vertices = g.GetVertices();
+                Dictionary<string, uint> ids = new Dictionary<string, uint>();
+
+
+
+                for (int i = 0; i < vertices.Count; i++)
+                {
+                    string name = vertices[i];
+
+                    var cmd2 = new MySqlCommand("INSERT INTO Sommet(graphe_id, nom, valeur, indice) VALUES (@g,@n,@v,@i); SELECT LAST_INSERT_ID();", conn);
+
+
+                    cmd2.Parameters.AddWithValue("@g", graphId);
+                    cmd2.Parameters.AddWithValue("@n", name);
+                    cmd2.Parameters.AddWithValue("@v", g.GetVertexValue(name));
+                    cmd2.Parameters.AddWithValue("@i", i);
+
+                    uint id = Convert.ToUInt32(cmd2.ExecuteScalar());
+                    ids[name] = id;
+
+                }
+
+                for (int i = 0; i < vertices.Count; i++)
+                {
+                    for (int j = 0; j < vertices.Count; j++)
+                    {
+                        if (i == j) continue;
+
+                        string s = vertices[i];
+                        string d = vertices[j];
+
+                        try
+                        {
+                            float w = g.GetEdgeWeight(s, d);
+
+                            var cmd3 = new MySqlCommand(
+                                "INSERT INTO Arc(graphe_id, sommet_source, sommet_dest, poids) VALUES (@g,@s,@d,@p);",
+                                conn);
+
+                            cmd3.Parameters.AddWithValue("@g", graphId);
+                            cmd3.Parameters.AddWithValue("@s", ids[s]);
+                            cmd3.Parameters.AddWithValue("@d", ids[d]);
+                            cmd3.Parameters.AddWithValue("@p", w);
+
+                            cmd3.ExecuteNonQuery();
+                        }
+                        catch
+                        {
+                            // pas d'arc → on ignore
+                        }
+                    }
+                }
+
+                return graphId;
+            }
         }
+    
+        
 
         /// <summary>
         /// Charge depuis la base de données le graphe identifié par <paramref name="id"/>

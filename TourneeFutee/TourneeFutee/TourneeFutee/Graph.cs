@@ -47,7 +47,29 @@ namespace TourneeFutee
                                              // pas de set
         }
 
+        public float NoEdgeValue
+        {
+            get { return this.noEdgeValue; }
+        }
 
+        public bool ContainsVertex(string name)
+        {
+            return vertexIndices.ContainsKey(name);
+        }
+
+        public bool IsOriented
+        {
+            get { return this.directed; }
+        }
+
+        public int VertexCount
+        {
+            get { return this.Order; }
+        }
+
+        public Graph(bool isOriented) : this(isOriented, 0)
+        {
+        }
         // --- Gestion des sommets ---
 
         // Ajoute le sommet de nom `name` et de valeur `value` (0 par défaut) dans le graphe
