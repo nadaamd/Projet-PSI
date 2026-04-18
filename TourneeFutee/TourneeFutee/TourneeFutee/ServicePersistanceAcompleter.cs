@@ -168,7 +168,75 @@ namespace TourneeFutee
             //   3. SELECT dans Arc WHERE graphe_id = @id -> reconstruire la matrice
             //      d'adjacence en utilisant les correspondances sommet_id <-> indice
 
-            throw new NotImplementedException("LoadGraph non implémenté.");
+          
+            using (var conn = OpenConnection())
+            {
+                bool estOriente;
+                float noEdgeValue;
+
+                var cmd1 = new MySqlCommand(
+                    "SELECT est_oriente, no_edge_value FROM Graphe WHERE id = @id;",
+                    conn);
+
+                cmd1.Parameters.AddWithValue("@id", id);
+
+                using (var reader = cmd1.ExecuteReader())
+                {
+                    if (!reader.Read())
+                        throw new Exception("Graphe introuvable");
+
+                    estOriente = Convert.ToBoolean(reader["est_oriente"]);
+                    noEdgeValue = Convert.ToSingle(reader["no_edge_value"]);
+                }
+
+                Graph graph = new Graph(estOriente, noEdgeValue);
+
+                Dictionary<uint, string> ids = new Dictionary<uint, string>();
+
+                var cmd2 = new MySqlCommand(
+                    "SELECT id, nom, valeur FROM Sommet WHERE graphe_id = @g ORDER BY indice;",
+                    conn);
+
+                cmd2.Parameters.AddWithValue("@g", id);
+
+                using (var reader = cmd2.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        uint sommetId = Convert.ToUInt32(reader["id"]);
+                        string nom = reader["nom"].ToString();
+                        float valeur = Convert.ToSingle(reader["valeur"]);
+
+                        graph.AddVertex(nom, valeur);
+                        ids[sommetId] = nom;
+                    }
+                }
+
+                var cmd3 = new MySqlCommand(
+                    "SELECT sommet_source, sommet_dest, poids FROM Arc WHERE graphe_id = @graph;",
+                    conn);
+
+                cmd3.Parameters.AddWithValue("@graph", id);
+
+                using (var reader = cmd3.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        uint sourceId = Convert.ToUInt32(reader["sommet_source"]);
+                        uint destId = Convert.ToUInt32(reader["sommet_dest"]);
+                        float poids = Convert.ToSingle(reader["poids"]);
+
+                        if (!estOriente && sourceId > destId)
+                            continue;
+
+
+                        graph.AddEdge(ids[sourceId], ids[destId], poids);
+                    }
+                }
+
+                return graph;
+            }
+        
         }
 
         /// <summary>
