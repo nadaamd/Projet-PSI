@@ -259,8 +259,59 @@ namespace TourneeFutee
             // Attention : conserver l'ordre des étapes est essentiel pour
             //             pouvoir reconstruire la tournée fidèlement au chargement.
 
-            throw new NotImplementedException("SaveTour non implémenté.");
+        
+            using (var connection = OpenConnection())
+            {
+                uint tourId;
+
+                //on insére la tournée dans la table Tournee et on récupère l'id généré automatiquement
+                var insertTourCommand = new MySqlCommand(
+                    "INSERT INTO Tournee(graphe_id, cout_total) VALUES (@graphId, @totalCost); SELECT LAST_INSERT_ID();",
+                    connection);
+
+                insertTourCommand.Parameters.AddWithValue("@graphId", graphId);
+                insertTourCommand.Parameters.AddWithValue("@totalCost", t.TotalCost);
+
+                tourId = Convert.ToUInt32(insertTourCommand.ExecuteScalar());
+
+                //  on récupére tous les sommets du graphe 
+                Dictionary<string, uint> vertexNameToId = new Dictionary<string, uint>();
+
+                var selectVerticesCommand = new MySqlCommand(
+                    "SELECT id, nom FROM Sommet WHERE graphe_id = @graphId;",
+                    connection);
+
+                selectVerticesCommand.Parameters.AddWithValue("@graphId", graphId);
+
+                using (var reader = selectVerticesCommand.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        uint vertexId = Convert.ToUInt32(reader["id"]);
+                        string vertexName = reader["nom"].ToString();
+                        vertexNameToId[vertexName] = vertexId;
+                    }
+                }
+                //on insére chaque étape de la tournée dans EtapeTournee et on garde l'ordre grâce à numero_ordre
+                for (int i = 0; i < t.Vertices.Count; i++)
+                {
+                    string vertexName = t.Vertices[i];
+
+                    var insertStepCommand = new MySqlCommand(
+                        "INSERT INTO EtapeTournee(tournee_id, numero_ordre, sommet_id) VALUES (@tourId, @orderIndex, @vertexId);",
+                        connection);
+
+                    insertStepCommand.Parameters.AddWithValue("@tourId", tourId);
+                    insertStepCommand.Parameters.AddWithValue("@orderIndex", i);
+                    insertStepCommand.Parameters.AddWithValue("@vertexId", vertexNameToId[vertexName]);
+
+                    insertStepCommand.ExecuteNonQuery();
+                }
+
+                return tourId;
+            }
         }
+        
 
         /// <summary>
         /// Charge depuis la base de données la tournée identifiée par <paramref name="id"/>
@@ -278,8 +329,47 @@ namespace TourneeFutee
             //      ORDER BY numero_ordre -> reconstruire la séquence ordonnée de sommets
             //   3. Construire et retourner l'instance Tour
 
-            throw new NotImplementedException("LoadTour non implémenté.");
-        }
+
+            using (var connection = OpenConnection())
+            {
+                float totalCost;
+
+                // on récupére le coût total
+                var selectTourCommand = new MySqlCommand(
+                    "SELECT cout_total FROM Tournee WHERE id = @tourId;",
+                    connection);
+
+                selectTourCommand.Parameters.AddWithValue("@tourId", id);
+
+                using (var reader = selectTourCommand.ExecuteReader())
+                {
+                    if (!reader.Read())
+                        throw new Exception("Tournée introuvable");
+
+                    totalCost = Convert.ToSingle(reader["cout_total"]);
+                }
+
+                // on récupère la liste ordonée des sommets
+                List<string> vertexSequence = new List<string>();
+
+                var selectStepsCommand = new MySqlCommand(
+                    "SELECT s.nom FROM EtapeTournee e JOIN Sommet s ON e.sommet_id = s.id WHERE e.tournee_id = @tourId ORDER BY e.numero_ordre;",
+                    connection);
+
+                selectStepsCommand.Parameters.AddWithValue("@tourId", id);
+
+                using (var reader = selectStepsCommand.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        vertexSequence.Add(reader["nom"].ToString());
+                    }
+                }
+
+                //on reconstruit la tournée
+                return new Tour(vertexSequence, totalCost);
+            }
+        }        
 
         // ─────────────────────────────────────────────────────────────────────
         // Méthodes utilitaires privées (à compléter selon vos besoins)
